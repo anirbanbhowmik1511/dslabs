@@ -6,6 +6,11 @@ out/
 .idea/workspace.xml
 .idea/tasks.xml
 .idea-out
+.idea/.gitignore
+.idea/gradle.xml
+.idea/modules/
+.idea/vcs.xml
+
 
 
 # Common OS/Editor files
@@ -21,3 +26,16 @@ Desktop.ini
 
 # analytics
 .usage-database.db
+
+#gradle
+.gradle/
+.project
+
+#make generated
+bin/
+build/
+deps/
+gradle/
+gradlew
+gradlew.bat
+
