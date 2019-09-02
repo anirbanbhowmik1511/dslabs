@@ -5,6 +5,7 @@ import dslabs.framework.Client;
 import dslabs.framework.Command;
 import dslabs.framework.Node;
 import dslabs.framework.Result;
+import java.util.Objects;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
@@ -18,8 +19,9 @@ import lombok.ToString;
 @EqualsAndHashCode(callSuper = true)
 class SimpleClient extends Node implements Client {
     private final Address serverAddress;
-
-    // Your code here...
+    private Request request;
+    private Reply reply;
+    private int seqNumber = 0;
 
     /* -------------------------------------------------------------------------
         Construction and Initialization
@@ -39,32 +41,42 @@ class SimpleClient extends Node implements Client {
        -----------------------------------------------------------------------*/
     @Override
     public synchronized void sendCommand(Command command) {
-        // Your code here...
+        this.request = new Request(command, seqNumber++);
+        this.reply = null;
+        this.send(request, serverAddress);
+        this.set(new ClientTimer(request), ClientTimer.CLIENT_RETRY_MILLIS);
     }
 
     @Override
     public synchronized boolean hasResult() {
-        // Your code here...
-        return false;
+        return reply != null;
     }
 
     @Override
     public synchronized Result getResult() throws InterruptedException {
-        // Your code here...
-        return null;
+        while (reply == null){
+            this.wait();
+        }
+        return reply.result();
     }
 
     /* -------------------------------------------------------------------------
         Message Handlers
        -----------------------------------------------------------------------*/
     private synchronized void handleReply(Reply m, Address sender) {
-        // Your code here...
+        if(m.seqNumber() == request.seqNumber()){
+            reply = m;
+            notify();
+        }
     }
 
     /* -------------------------------------------------------------------------
         Timer Handlers
        -----------------------------------------------------------------------*/
     private synchronized void onClientTimer(ClientTimer t) {
-        // Your code here...
+        if(request != null && reply == null && Objects.equals(t.request(), request)){
+            this.seqNumber = t.request().seqNumber() - 1;
+            this.sendCommand(t.request().command());
+        }
     }
 }
