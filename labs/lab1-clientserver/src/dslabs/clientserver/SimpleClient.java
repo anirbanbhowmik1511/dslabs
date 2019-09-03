@@ -42,7 +42,7 @@ class SimpleClient extends Node implements Client {
        -----------------------------------------------------------------------*/
     @Override
     public synchronized void sendCommand(Command command) {
-        this.request = new Request(new AMOCommand(command, address(),seqNumber++));
+        this.request = new Request(command,seqNumber++);
         this.reply = null;
         this.send(request, serverAddress);
         this.set(new ClientTimer(request), ClientTimer.CLIENT_RETRY_MILLIS);
@@ -58,14 +58,14 @@ class SimpleClient extends Node implements Client {
         while (reply == null){
             this.wait();
         }
-        return reply.amoResult().result();
+        return reply.result();
     }
 
     /* -------------------------------------------------------------------------
         Message Handlers
        -----------------------------------------------------------------------*/
     private synchronized void handleReply(Reply m, Address sender) {
-        if(m.amoResult().seqNumber() == request.amoCommand().seqNumber()){
+        if(m.seqNumber() == request.seqNumber()){
             reply = m;
             notify();
         }
@@ -76,8 +76,8 @@ class SimpleClient extends Node implements Client {
        -----------------------------------------------------------------------*/
     private synchronized void onClientTimer(ClientTimer t) {
         if(request != null && reply == null && Objects.equals(t.request(), request)){
-            this.seqNumber = t.request().amoCommand().seqNumber();
-            this.sendCommand(t.request().amoCommand().command());
+            this.seqNumber = t.request().seqNumber();
+            this.sendCommand(t.request().command());
         }
     }
 }

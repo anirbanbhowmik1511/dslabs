@@ -40,7 +40,7 @@ class SimpleServer extends Node {
         Message Handlers
        -----------------------------------------------------------------------*/
     private void handleRequest(Request m, Address sender) {
-        AMOResult amoResult = (AMOResult)application.execute(m.amoCommand());
-        this.send(new Reply(amoResult), sender);
+        AMOResult amoResult = (AMOResult)application.execute(new AMOCommand(m.command(), sender, m.seqNumber()));
+        this.send(new Reply(amoResult.result(), m.seqNumber()), sender);
     }
 }

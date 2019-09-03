@@ -9,10 +9,12 @@ import lombok.Data;
 
 @Data
 class Request implements Message {
-    private final AMOCommand amoCommand;
+    private final Command command;
+    private final int seqNumber;
 }
 
 @Data
 class Reply implements Message {
-    private final AMOResult amoResult;
+    private final Result result;
+    private final int seqNumber;
 }
